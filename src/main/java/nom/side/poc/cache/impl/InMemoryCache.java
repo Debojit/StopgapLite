@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import nom.side.poc.cache.Cache;
 
-public class InMemoryCache extends Thread implements Cache {
-	private final int DEFAULT_TIME_TO_LIVE = 30; //In seconds
+public class InMemoryCache implements Cache {
+	private final int DEFAULT_TIME_TO_LIVE = 60; //In seconds
 
 	private Map<String, CacheEntry> store;
 	private int timeToLive; //In seconds
@@ -19,15 +19,17 @@ public class InMemoryCache extends Thread implements Cache {
 	private InMemoryCache() {
 		this.store = new ConcurrentHashMap<String, CacheEntry>(10);
 		this.timeToLive = DEFAULT_TIME_TO_LIVE;
-		this.setDaemon(true);
-		this.start();
+		Thread cacheThread = new Thread(this);
+		cacheThread.setDaemon(true);
+		cacheThread.start();
 	}
 	
 	private InMemoryCache(int timeToLive) {
 		this.store = new ConcurrentHashMap<String, CacheEntry>(10);
 		this.timeToLive = timeToLive;
-		this.setDaemon(true);
-		this.start();
+		Thread cacheThread = new Thread(this);
+		cacheThread.setDaemon(true);
+		cacheThread.start();
 	}
 
 	public static InMemoryCache loadCache() {
@@ -45,10 +47,6 @@ public class InMemoryCache extends Thread implements Cache {
 			instance.timeToLive = timeToLive;
 		}
 		return instance;
-	}
-	
-	public static void purgeCache() {
-		instance.interrupt();
 	}
 
 	@Override
