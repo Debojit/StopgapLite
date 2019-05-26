@@ -8,10 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import nom.side.poc.cache.Cache;
 
-/**
- * Hello world!
- *
- */
 public class InMemoryCache extends Thread implements Cache {
 	private final int DEFAULT_TIME_TO_LIVE = 30; //In seconds
 
