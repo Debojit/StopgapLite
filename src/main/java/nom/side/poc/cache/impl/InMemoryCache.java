@@ -13,24 +13,46 @@ import nom.side.poc.cache.Cache;
  *
  */
 public class InMemoryCache extends Thread implements Cache {
+	private final int DEFAULT_TIME_TO_LIVE = 30; //In seconds
+
 	private Map<String, CacheEntry> store;
-	private int timeToLive;
+	private int timeToLive; //In seconds
 	
-	private static InMemoryCache cacheObj;
+	private static InMemoryCache instance;
 
 	private InMemoryCache() {
 		this.store = new ConcurrentHashMap<String, CacheEntry>(10);
-		this.timeToLive = 30;
+		this.timeToLive = DEFAULT_TIME_TO_LIVE;
 		this.setDaemon(true);
-		cacheObj = this;
-		System.out.println("New cache created..");
+		this.start();
+	}
+	
+	private InMemoryCache(int timeToLive) {
+		this.store = new ConcurrentHashMap<String, CacheEntry>(10);
+		this.timeToLive = timeToLive;
+		this.setDaemon(true);
+		this.start();
 	}
 
 	public static InMemoryCache loadCache() {
-		if (cacheObj == null) {
-			(new InMemoryCache()).start();
+		if (instance == null) {
+			instance = new InMemoryCache();
 		}
-		return cacheObj;
+		return instance;
+	}
+	
+	public static InMemoryCache loadCache(int timeToLive) {
+		if (instance == null) {
+			instance = new InMemoryCache(timeToLive);
+		}
+		else {
+			instance.timeToLive = timeToLive;
+		}
+		return instance;
+	}
+	
+	public static void purgeCache() {
+		instance.interrupt();
 	}
 
 	@Override
@@ -49,15 +71,13 @@ public class InMemoryCache extends Thread implements Cache {
 	public void delete(String key) {
 		this.store.remove(key);
 	}
-
+	
 	@Override
 	public void run() {
-		cacheObj = new InMemoryCache();
-
 		while (!Thread.currentThread().isInterrupted()) {
 			try {
-				Thread.sleep(5000);
-				for(Entry<String, CacheEntry> entry : store.entrySet()) {
+				Thread.sleep(2000);
+				for(Entry<String, CacheEntry> entry : this.store.entrySet()) {
 					if(entry.getValue().getAge(new Date()) > this.timeToLive)
 						this.delete(entry.getKey());
 				}
