@@ -50,8 +50,7 @@ public class InMemoryCache implements Cache {
 	}
 
 	@Override
-	public String add(Object obj) {
-		String key = UUID.randomUUID().toString();
+	public String add(String key, Object obj) {
 		this.store.put(key, new CacheEntry(obj));
 		return key;
 	}
